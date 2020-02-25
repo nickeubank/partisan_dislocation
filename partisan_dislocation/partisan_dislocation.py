@@ -45,10 +45,7 @@ def random_points_in_polygon(precincts, k,
     if p is not None and post_sampling_k is not None:
         raise ValueError("Cannot use both p and post_sampling_k.")
 
-    total_voters = precincts[dem_vote_count_column].sum() + precincts[rep_vote_count_column].sum()
-    voters_per_district = num_districts / total_voters
-
-
+        
     gf = pd.DataFrame(columns=['dem','KnnShrDem', 'GEOID10','geometry'])
 
     for index, row in df.iterrows():
