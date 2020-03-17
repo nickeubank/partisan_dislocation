@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: partisan-dislocation
+Version: 0.0.1
+Summary: Generates representative voter points from precinct polygons with vote counts
+Home-page: https://github.com/nickeubank/partisan_dislocation
+Author: Deford, Eubank and Rodden
+Author-email: nick@nickeubank.com
+Maintainer: nick@nickeubank.com
+Maintainer-email: nick@nickeubank.com
+License: UNKNOWN
+Description: # partisan_dislocation
+Keywords: partisan_dislocation
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/x-rst
