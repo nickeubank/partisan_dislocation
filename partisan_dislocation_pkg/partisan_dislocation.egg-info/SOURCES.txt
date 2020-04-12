@@ -1,8 +1,0 @@
-README.md
-setup.py
-partisan_dislocation/__init__.py
-partisan_dislocation.egg-info/PKG-INFO
-partisan_dislocation.egg-info/SOURCES.txt
-partisan_dislocation.egg-info/dependency_links.txt
-partisan_dislocation.egg-info/requires.txt
-partisan_dislocation.egg-info/top_level.txt

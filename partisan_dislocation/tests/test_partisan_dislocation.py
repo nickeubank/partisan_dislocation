@@ -21,8 +21,8 @@ class TestPartisanDislocation(unittest.TestCase):
 
     def test_random_points_in_polygon_append(self):
         polygons = gpd.GeoSeries([Polygon([(0, 0), (1, 1), (0, 1)]), None, Polygon([])])
-        points = random_points_in_polygon(20,polygons.loc[0], "Expected number of points generated")
-        self.assertEqual(len(points), 20)
+        points = random_points_in_polygon(20,polygons.loc[0])
+        self.assertEqual(len(points), 20,  "Expected number of points generated")
 
 if __name__ == '__main__':
     unittest.main()

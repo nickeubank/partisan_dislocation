@@ -5,7 +5,7 @@ import pandas as pd
 from shapely.geometry import Point
 import random
 
-precincts = gdp.read_
+#precincts = gdp.read_
 
 
 
