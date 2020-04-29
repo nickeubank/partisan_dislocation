@@ -119,6 +119,6 @@ def calculate_dislocation(voter_points, districts,
     """
 
     districts = districts.to_crs(voter_points.crs)
-    voter_points.overlay(districts[[district_voteshare]]
+    voter_points.sjoin(districts[[district_voteshare]]
     voter_points['dislocation'] = voter_points[knn_column] -
                                   voter_points[district_voteshare]
