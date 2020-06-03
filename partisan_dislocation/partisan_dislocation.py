@@ -5,64 +5,50 @@ import pandas as pd
 from shapely.geometry import Point
 import random
 
-def random_points_in_polygon(precincts, k,
-                             p=None, post_sampling_k=None,
+def random_points_in_polygon(precincts, p,
                              dem_vote_count_column="dem",
                              repub_vote_count_column="rep",
                              dem_uniform_swing=0,
                              random_seed=None):
     """
     :param precincts: :class:`geopandas.GeoDataFrame`
-    :param k: Effecive num nearest neighbors to consider.
-              This is the number of voters you would want to
-              consider if you were NOT downsampling.
-              If you set k=1,000 and p=0.1, then the actual
-              number of representative voter points considered
-              in nearest neighbor analysis will be 100.
-    :param p: Sampling parameter. (default=None).
-              Cannot be combined with `post_sampling_k`.
+                      This is a polygon shapefile with vote totals.
+    :param p: Sampling parameter.
               Probability of voter inclusion; inverse of number
               of actual voters represented by each representative
               voter.
-    :param post_sampling_k: (default=None)
-              Number of neighbors considered after sampling.
-              Implies a sampling probability and cannot
-              be combined with `p`.
     :param dem_vote_count_column: (default="dem")
               Name of column with Democratic vote counts per precinct.
     :param repub_vote_count_column: (default="rep")
               Name of column with Republican vote counts per precinct.
-    :param dem_uniform_swing:
     :param random_seed: (default=None)
               Random state or seed passed to numpy.
     """
 
-    # Checks
-    if p is not None and post_sampling_k is not None:
-        raise ValueError("Cannot use both p and post_sampling_k.")
-
-
-    gf = pd.DataFrame(columns=['dem','KnnShrDem', 'GEOID10','geometry'])
+    # Make master dataframe
+    gf = pd.DataFrame(columns=['dem','KnnShrDem', 'geometry'])
 
     for index, row in df.iterrows():
 
-        points_to_add =  np.random.binomial(int(row[election+"D"]), prob)
+        # Loop over dems and republicans
+        for party in ['D', 'R']:
+            points_to_add =  np.random.binomial(int(row[election + party]), prob)
 
-        points = random_points_in_polygon(points_to_add, row.geometry)
+            points = _make_random_points(points_to_add, row.geometry)
 
-        for point in points:
-            gf=gf.append({'dem': 1, 'KnnShrDem': None,
-                          'GEOID10': row["GEOID10"], 'geometry': point}, ignore_index=True)
+            for point in points:
+                if party == "D":
+                    dem_value = 1
+                else: 
+                    dem_value = 0
+                
+                gf=gf.append({'dem': dem_value, 'KnnShrDem': None,
+                              'geometry': point}, 
+                             ignore_index=True)
 
-        points_to_add =  np.random.binomial(int(row[election+"R"]), prob)
-
-        points = _make_random_points(points_to_add, row.geometry)
-
-        for point in points:
-            gf=gf.append({'dem': 0, 'KnnShrDem': None,
-                          'GEOID10': row["GEOID10"], 'geometry': point}, ignore_index=True)
-
-
+    # Return gf, which should be a geodataframe of points
+    return gf
+                
 def _make_random_points(number, polygon):
     #Generates number of uniformly distributed points in polygon
     points = []
