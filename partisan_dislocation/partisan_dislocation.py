@@ -28,11 +28,11 @@ def random_points_in_polygon(precincts, p,
     # Make master dataframe
     gf = pd.DataFrame(columns=['dem','KnnShrDem', 'geometry'])
 
-    for index, row in df.iterrows():
+    for index, row in precincts.iterrows():
 
         # Loop over dems and republicans
-        for party in ['D', 'R']:
-            points_to_add =  np.random.binomial(int(row[election + party]), prob)
+        for party in [dem_vote_count_column, repub_vote_count_column]:
+            points_to_add =  np.random.binomial(int(row[party]), p)
 
             points = _make_random_points(points_to_add, row.geometry)
 
@@ -89,8 +89,8 @@ def calculate_voter_knn(voter_points, k, target_column='dem'):
     voter_points[f"KnnShr{target_column}"] = pd.to_numeric(voter_points[f"KnnShr{target_column}"])
 
 def calculate_dislocation(voter_points, districts,
-                          knn_column = 'KnnShrDem',
-                          district_voteshare='dem'):
+                          knn_column='KnnShrDem',
+                          dem_column='dem'):
     """
         Calculation difference between knn dem share
         and dem share of assigned district
@@ -100,11 +100,22 @@ def calculate_dislocation(voter_points, districts,
         :param voter_points: :class:`geopandas.GeoDataFrame`.
               GeoDataFrame of district polygons.
         :param knn_column: Column of `voter_points` with kNN scores
-        :param district_voteshare: Column of `districts` with
-              district feature to difference from `knn_columns`.
     """
 
+    # Put both geodataframes in a common projection
     districts = districts.to_crs(voter_points.crs)
-    voter_points.sjoin(districts[[district_voteshare]]
+    
+    # Calculate district dem share
+    districts.sjoin(voter_points[[dem_column]], how='left')
+    
+    # Collapse to one row per district with avg of `dem` as new column
+    # Call new column district_demshare
+
+
+    
+    # Merge voters with districts to get 
+    voter_points.sjoin(districts[['district_demshare']]
     voter_points['dislocation'] = voter_points[knn_column] -
                                   voter_points[district_voteshare]
+
+    return voter_points
