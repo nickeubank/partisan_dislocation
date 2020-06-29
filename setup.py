@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 import versioneer
 
-with open("./README.rst") as f:
+with open("./README.md") as f:
     long_description = f.read()
 
 requirements = [
@@ -26,8 +26,6 @@ setup(
     long_description_content_type="text/x-rst",
     url="https://github.com/nickeubank/partisan_dislocation",
     packages=find_packages(exclude=("tests",)),
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
     install_requires=requirements,
     keywords="partisan_dislocation",
     classifiers=[
