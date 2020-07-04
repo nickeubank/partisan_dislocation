@@ -75,7 +75,9 @@ def random_points_in_polygon(precincts, p=0.01,
     gf['geometry'] = gf['geometry'].str.replace('\)', '')
     gf[['x', 'y']] = gf.geometry.str.split(' ', expand=True)
     gf.drop(columns=['geometry'], inplace=True)
-    
+    gf[['Dem', 'x', 'y']] = gf[['Dem', 'x', 'y']].apply(pd.to_numeric)
+    gf['KnnShrDem'] = gf['KnnShrDem'].astype(None)
+
     return gf
 
 def calculate_voter_knn(voter_points, k, target_column='Dem'):
@@ -140,14 +142,14 @@ def calculate_dislocation(voter_points, district, knn_column='KnnShrDem', dem_co
     return dislocation_score_df
 
 # Uncomment following code to test all functions with NC state
-"""
+
 precinct_gdf, district_gdf = get_geodataframe("2008_presidential_precinct_counts.shp","US_cd114th_2014.shp" )
 nc = precinct_gdf[precinct_gdf.STATE == "37"]
 nc_random_points = random_points_in_polygon(precincts=nc)
 nc_voter_knn = calculate_voter_knn(voter_points = nc_random_points, k=10)
 nc_voter_knn.crs = nc.crs # Set crs attribute
 nc_dislocation = calculate_dislocation(voter_points=nc_voter_knn, district=district_gdf)
-"""
+
 # to resolve
 # convert polygon to geometry in final dislocation dataframe
 # set crs attribute in function itself
