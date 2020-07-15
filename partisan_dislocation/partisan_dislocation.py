@@ -34,8 +34,8 @@ def _make_random_points(number, polygon):
     return points
 
 def random_points_in_polygon(precincts, p=0.01,
-                             dem_vote_count_column="D",
-                             repub_vote_count_column="R",
+                             dem_vote_count="D",
+                             repub_vote_count="R",
                              dem_uniform_swing=0,
                              random_seed=None):
     """
@@ -57,11 +57,11 @@ def random_points_in_polygon(precincts, p=0.01,
 
     for index, row in precincts.iterrows():
         # Loop over dems and republicans
-        for party in [dem_vote_count_column, repub_vote_count_column]:
+        for party in [dem_vote_count, repub_vote_count]:
             points_to_add = np.random.binomial(int(row[party]), p)
             points = _make_random_points(points_to_add, row.geometry)
             for point in points:
-                if party == "D":
+                if party == dem_vote_count:
                     dem_value = 1
                 else:
                     dem_value = 0
