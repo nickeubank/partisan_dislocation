@@ -16,18 +16,61 @@ class TestPartisanDislocation(unittest.TestCase):
         benchmark = pd.Series([0, 1], name='Dem')
         pd.testing.assert_series_equal(result["Dem"], benchmark)
 
-    def test_random_points_in_polygon_with_zero_points(self):
-        # Assume
-         df = gpd.GeoDataFrame({'P2008_D': [0, 1], 'P2008_R': [1, 0],
-                               'geometry': [Polygon([]),
-                                            Polygon([]})
-        # Action
+    def test_random_points_in_polygon_negative_coordinates(self):
+        df = gpd.GeoDataFrame({'P2008_D': [0, 1], 'P2008_R': [1, 0],
+                               'geometry': [Polygon([(-1, -1), (2, -3), (4, 7)]),
+                                            Polygon([(8, 10), (-5, -3), (6, 9)])]})
         result = random_points_in_polygon(df, p=1)
-        benchpark = pd.Series()
+        benchmark = pd.Series([0, 1], name='Dem')
+        pd.testing.assert_series_equal(result["Dem"], benchmark)
+        
+    def test_random_points_in_polygon_float_coordinates(self):
+        df = gpd.GeoDataFrame({'P2008_D': [0, 1], 'P2008_R': [1, 0],
+                               'geometry': [Polygon([(-1.3, -1.0), (2.8, -3.1), (4.4, 7.9)]),
+                                            Polygon([(8.6, 10.5), (-5.3, -3.4), (6.2, 9.1)])]})
+        result = random_points_in_polygon(df, p=1)
+        benchmark = pd.Series([0, 1], name='Dem')
+        pd.testing.assert_series_equal(result["Dem"], benchmark) 
+"""      
+    def test_random_points_in_polygon_diff_prob(self):
+        df = gpd.GeoDataFrame({'P2008_D': [0, 1], 'P2008_R': [1, 0],
+                               'geometry': [Polygon([(-1.3, -1.0), (2.8, -3.1), (4.4, 7.9)]),
+                                            Polygon([(8.6, 10.5), (-5.3, -3.4), (6.2, 9.1)])]})
+        result = random_points_in_polygon(df, p=0.5)
+        benchmark = pd.Series([0, 1], name='Dem')
+        pd.testing.assert_series_equal(result["Dem"], benchmark)
+"""      
 
-        # Assert
-        self.assertEqual(random_points_in_polygon(0,polygons.loc[0]), points, "Generating 0 random points")
-"""
+
+    def test_calculate_voter_knn_simple_test(self):
+        df = gpd.GeoDataFrame({'P2008_D': [0, 1], 'P2008_R': [1, 0],
+                               'geometry': [Polygon([(-1.3, -1.0), (2.8, -3.1), (4.4, 7.9)]),
+                                            Polygon([(8.6, 10.5), (-5.3, -3.4), (6.2, 9.1)])]})
+        result = random_points_in_polygon(df, p=1)
+        benchmark = pd.DataFrame([0, 0], name='Dem')
+        pd.testing.assert_frame_equal(result["Dem"], benchmark)
+
+        
+        
+"""        
+    def test_random_points_in_polygon_float_values(self):
+        df = gpd.GeoDataFrame({'P2008_D': [0, 1], 'P2008_R': [1, 0],
+                               'geometry': [Point([(0, 0)]),
+                                            Point([(0, 0)])]})
+        result = random_points_in_polygon(df, p=1)
+        benchmark = pd.Series([0, 0], name='Dem')
+        pd.testing.assert_frame_equal(result["Dem"], benchmark)
+
+
+    
+
+    def test_random_points_in_polygon_with_zero_points(self):
+         df = gpd.GeoDataFrame({'P2008_D': [0, 1], 'P2008_R': [1, 0], 'geometry': [Polygon([]), Polygon([])]})
+        result = random_points_in_polygon(df, p=1)
+        benchmark = pd.Series([], name='Dem')
+        pd.testing.assert_series_equal(result["Dem"], benchmark)
+        
+
     def test_random_points_in_polygon_random_values(self):
         # Assume
         polygons = gpd.GeoSeries([Polygon([(0, 0), (1, 1), (0, 1)]), None, Polygon([])])
@@ -51,6 +94,9 @@ class TestPartisanDislocation(unittest.TestCase):
         self.assertEqual(len(points), 20,  "Expected number of points generated")
 
 """
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
