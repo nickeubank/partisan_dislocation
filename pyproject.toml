@@ -19,5 +19,6 @@ classifiers=[
     "Programming Language :: Python :: 3.7",
     "Operating System :: OS Independent",
 ]
+
 [tool.flit.sdist]
-exclude = ["data"]
+exclude = ["2008_presidential_precinct_data", "*.ipynb"]

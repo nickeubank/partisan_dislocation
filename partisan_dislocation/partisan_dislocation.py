@@ -45,20 +45,20 @@ def random_points_in_polygon(precincts, p=0.01,
               Probability of voter inclusion; inverse of number
               of actual voters represented by each representative
               voter.
-    :param dem_vote_count_column: (default="dem")
+    :param dem_vote_count: (default="dem")
               Name of column with Democratic vote counts per precinct.
-    :param repub_vote_count_column: (default="rep")
+    :param repub_vote_count: (default="rep")
               Name of column with Republican vote counts per precinct.
     :param random_seed: (default=None)
               Random state or seed passed to numpy.
     """
     # Make master dataframe
     gf = gpd.GeoDataFrame(columns=['Dem', 'KnnShrDem', 'geometry'])
-    election = "P2008_"
+
     for index, row in precincts.iterrows():
         # Loop over dems and republicans
         for party in [dem_vote_count_column, repub_vote_count_column]:
-            points_to_add = np.random.binomial(int(row[election + party]), p)
+            points_to_add = np.random.binomial(int(row[party]), p)
             points = _make_random_points(points_to_add, row.geometry)
             for point in points:
                 if party == "D":
