@@ -68,7 +68,7 @@ def random_points_in_polygon(precincts, p=0.01,
 
                 gf = gf.append({'Dem': dem_value, 'KnnShrDem': None, 'geometry': point}, ignore_index=True)
 
-    gf['Dem'] = gf['Dem'].astype(int)
+    gf['Dem'] = gf['Dem'].astype('int64')
     gf['KnnShrDem'] = gf['KnnShrDem'].astype(None)
 
     return gf
@@ -93,6 +93,7 @@ def calculate_voter_knn(voter_points, k, target_column='Dem'):
         its += 1
 
     return voter_points
+
 def calculate_dislocation(voter_points, district, knn_column='KnnShrDem', dem_column='dem'):
     """
         Calculation difference between knn dem share
@@ -129,12 +130,12 @@ def calculate_dislocation(voter_points, district, knn_column='KnnShrDem', dem_co
 
 # Uncomment following code to test all functions with NC state
 
-precinct_gdf, district_gdf = get_geodataframe("2008_presidential_precinct_counts.shp","US_cd114th_2014.shp" )
-nc = precinct_gdf[precinct_gdf.STATE == "37"]
-nc_random_points = random_points_in_polygon(precincts=nc)
-nc_voter_knn = calculate_voter_knn(voter_points = nc_random_points, k=10)
-nc_voter_knn.crs = nc.crs # Set crs attribute
-nc_dislocation = calculate_dislocation(voter_points=nc_voter_knn, district=district_gdf)
+#precinct_gdf, district_gdf = get_geodataframe("2008_presidential_precinct_counts.shp","US_cd114th_2014.shp" )
+# nc = precinct_gdf[precinct_gdf.STATE == "37"]
+# nc_random_points = random_points_in_polygon(precincts=nc)
+# nc_voter_knn = calculate_voter_knn(voter_points = nc_random_points, k=10)
+#nc_voter_knn.crs = nc.crs # Set crs attribute
+# nc_dislocation = calculate_dislocation(voter_points=nc_voter_knn, district=district_gdf)
 
 # to resolve
 # convert polygon to geometry in final dislocation dataframe
