@@ -8,19 +8,6 @@ from shapely.geometry import Polygon
 import random
 import os
 
-def get_geodataframe(precinct_file, district_file, data_path='../data'):
-    "Read the precinct and district files from the defined data path and return precinct and district geodataframes"
-
-    # read the geopandas precinct file
-    fpath_precinct = os.path.join(data_path, precinct_file)
-    precinct_gdf = gpd.read_file(fpath_precinct)
-
-    # read the geopandas district file
-    fpath_district = os.path.join(data_path, district_file)
-    district_gdf = gpd.read_file(fpath_district)
-
-    return precinct_gdf, district_gdf
-
 def _make_random_points(number, polygon):
     "Generates number of uniformly distributed points in polygon"
     points = []
@@ -53,7 +40,7 @@ def random_points_in_polygon(precincts, p=0.01,
               Random state or seed passed to numpy.
     """
     # Make master dataframe
-    gf = gpd.GeoDataFrame(columns=['Dem', 'KnnShrDem', 'geometry'])
+    gf = gpd.GeoDataFrame(columns=['Dem', 'geometry'])
 
     for index, row in precincts.iterrows():
         # Loop over dems and republicans
@@ -66,10 +53,9 @@ def random_points_in_polygon(precincts, p=0.01,
                 else:
                     dem_value = 0
 
-                gf = gf.append({'Dem': dem_value, 'KnnShrDem': None, 'geometry': point}, ignore_index=True)
+                gf = gf.append({'Dem': dem_value, 'geometry': point}, ignore_index=True)
 
     gf['Dem'] = gf['Dem'].astype('int64')
-    gf['KnnShrDem'] = gf['KnnShrDem'].astype(None)
 
     return gf
 
@@ -82,6 +68,8 @@ def calculate_voter_knn(voter_points, k, target_column='Dem'):
         :param k: Num nearest neighbors to consider.
         :param target_column: Feature to average
     """
+
+    voter_points[f'KnnShr{target_column}'] = np.nan
 
     tree = cKDTree(list(zip(voter_points['geometry'].x, voter_points['geometry'].y)))
 
