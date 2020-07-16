@@ -4,7 +4,7 @@ This package implements the partisan dislocation measure from [Deford, Eubank, R
 
 It takes as input a GeoDataframe of polygons with columns containing vote counts for both political parties for each polygon. it includes three functions which, when used sequentially, will return a GeoDataframe of representative voter point along with associated dislocation scores for each point.
 
-In addition, this repository also include the shapefiles of US precincts and their vote totals from the 2008 presidential election used in Deford, Eubank, Rodden. these can be found in the folder "2008_presidential_precinct_data." Note that to download this data, you will have to first install [git-lfs](https://www.git-lfs.github.org).
+In addition, the [repository for this package](http://www.github.com/nickeubank/partisan_dislocation) also include the shapefiles of US precincts and their vote totals from the 2008 presidential election used in Deford, Eubank, Rodden. these can be found in the folder "2008_presidential_precinct_data." Note that to download this data, you will have to first install [git-lfs](https://www.git-lfs.github.org) before cloning the repository.
 
 The three functions provided by the package are:
 
