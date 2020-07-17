@@ -23,7 +23,6 @@ def _make_random_points(number, polygon):
 def random_points_in_polygon(precincts, p=0.01,
                              dem_vote_count="D",
                              repub_vote_count="R",
-                             dem_uniform_swing=0,
                              random_seed=None):
     """
     :param precincts: :class:`geopandas.GeoDataFrame`
@@ -40,7 +39,7 @@ def random_points_in_polygon(precincts, p=0.01,
               Random state or seed passed to numpy.
     """
     # Make master dataframe
-    gf = gpd.GeoDataFrame(columns=['Dem', 'geometry'])
+    gf = gpd.GeoDataFrame(columns=['dem', 'geometry'])
 
     for index, row in precincts.iterrows():
         # Loop over dems and republicans
@@ -53,23 +52,27 @@ def random_points_in_polygon(precincts, p=0.01,
                 else:
                     dem_value = 0
 
-                gf = gf.append({'Dem': dem_value, 'geometry': point}, ignore_index=True)
+                gf = gf.append({'dem': dem_value, 'geometry': point}, ignore_index=True)
 
-    gf['Dem'] = gf['Dem'].astype('int64')
+    gf['dem'] = gf['dem'].astype('int64')
+    
+    # Make sure using original CRS
+    gf.crs = precincts.crs.to_proj4()
 
     return gf
 
-def calculate_voter_knn(voter_points, k, target_column='Dem'):
+def calculate_voter_knn(voter_points, k, target_column='dem'):
     """
         Calculation composition of nearest neigbhors.
 
         :param voter_points: :class:`geopandas.GeoDataFrame`.
               GeoDataFrame of voter points
         :param k: Num nearest neighbors to consider.
-        :param target_column: Feature to average
+        :param target_column: Feature to average across nearest neighbors.
     """
 
-    voter_points[f'KnnShr{target_column}'] = np.nan
+    voter_points = voter_points.copy()
+    voter_points[f'knn_shr_{target_column}'] = np.nan
 
     tree = cKDTree(list(zip(voter_points['geometry'].x, voter_points['geometry'].y)))
 
@@ -77,54 +80,55 @@ def calculate_voter_knn(voter_points, k, target_column='Dem'):
 
     its = 0
     for index, row in voter_points.iterrows():
-        voter_points.at[index, f'KnnShr{target_column}'] = sum(voter_points[target_column][ii[its]]) / k
+        voter_points.at[index, f'knn_shr_{target_column}'] = sum(voter_points[target_column]
+                                                                 [ii[its]]) / k
         its += 1
-
     return voter_points
 
-def calculate_dislocation(voter_points, district, knn_column='KnnShrDem', dem_column='dem'):
+def calculate_dislocation(voter_points, districts, 
+                          knn_column='knn_shr_dem', dem_column='dem'):
     """
         Calculation difference between knn dem share
         and dem share of assigned district
 
         :param voter_points: :class:`geopandas.GeoDataFrame`.
               GeoDataFrame of voter points.
-        :param voter_points: :class:`geopandas.GeoDataFrame`.
-              GeoDataFrame of district polygons.
-        :param knn_column: Column of `voter_points` with kNN scores
+        :param districts: :class:`geopandas.GeoDataFrame`.
+              GeoDataFrame of electoral district polygons.
+        :param knn_column: (default="knn_shr_dem")
+              Column of `voter_points` with kNN scores
+        :param dem_column: (default="dem")
+                Column with voter attribute to be averaged (usually "dem").
     """
 
     # Put both geodataframes in common projection
-    districts = district.to_crs(voter_points.crs)
+    districts = districts.to_crs(voter_points.crs.to_proj4())
+
+    # Add district ID column
+    new_id = 'partisan_dislocation_district_id'
+    if new_id in districts.columns:
+        raise ValueError(f"District GeoDataFrame may not have column "\
+                         f"named {new_id}")
+    districts = districts[['geometry']].reset_index(drop=True)
+    districts[new_id] = districts.index
+    assert districts[new_id].is_unique
 
     # Calculate district dem share
-    dist_voter_point = gpd.sjoin(districts, voter_points, how='inner')
+    dislocation = gpd.sjoin(voter_points, districts, how='inner')
 
     # Calculate democrat share for each district
-    dist1 = dist_voter_point.groupby(['NAMELSAD']).agg(district_demshare=pd.NamedAgg(column='Dem', aggfunc=np.mean))
-    dist1 = dist1.reset_index()
-
-    # merge the dataframe with democrat share in each district to obtain district democrat share for each voter
-    final_df = dist_voter_point.merge(dist1, how='left')
-
+    dislocation[f'district_{dem_column}_share'] = dislocation.groupby([new_id])[[dem_column]].transform(np.mean)
+        
     # Calculate dislocation score
-    final_df['dislocation'] = final_df['KnnShrDem'] - final_df['district_demshare']
+    dislocation['partisan_dislocation'] = (dislocation[knn_column] - 
+                                           dislocation[f'district_{dem_column}_share'])
 
-    # Select relevant columns
-    dislocation_score_df = final_df[['NAMELSAD', 'Dem', 'KnnShrDem', 'district_demshare', 'dislocation', 'geometry']]
+    # clean
+    dislocation = dislocation[[dem_column, knn_column, 
+                               f'district_{dem_column}_share', 
+                               'partisan_dislocation',
+                               'geometry']]
 
+    
     # final dataframe with dislocation score calculated for each voter
-    return dislocation_score_df
-
-# Uncomment following code to test all functions with NC state
-
-#precinct_gdf, district_gdf = get_geodataframe("2008_presidential_precinct_counts.shp","US_cd114th_2014.shp" )
-# nc = precinct_gdf[precinct_gdf.STATE == "37"]
-# nc_random_points = random_points_in_polygon(precincts=nc)
-# nc_voter_knn = calculate_voter_knn(voter_points = nc_random_points, k=10)
-#nc_voter_knn.crs = nc.crs # Set crs attribute
-# nc_dislocation = calculate_dislocation(voter_points=nc_voter_knn, district=district_gdf)
-
-# to resolve
-# convert polygon to geometry in final dislocation dataframe
-# set crs attribute in function itself
+    return dislocation
