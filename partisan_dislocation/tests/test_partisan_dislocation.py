@@ -11,7 +11,8 @@ class TestPartisanDislocation(unittest.TestCase):
     def test_random_points_in_polygon_simple_test(self):
         df = gpd.GeoDataFrame({'D': [0, 1], 'R': [1, 0],
                                'geometry': [Polygon([(0, 0), (1, 1), (0, 1)]),
-                                            Polygon([(0, 0), (1, 1), (0, 1)])]})
+                                            Polygon([(0, 0), (1, 1), (0, 1)])]},
+                               crs='esri:102010')
         result = random_points_in_polygon(df, p=1)
         benchmark = pd.Series([0, 1], name='dem')
         pd.testing.assert_series_equal(result["dem"], benchmark)
@@ -19,7 +20,8 @@ class TestPartisanDislocation(unittest.TestCase):
     def test_random_points_in_polygon_negative_coordinates(self):
         df = gpd.GeoDataFrame({'D': [0, 1], 'R': [1, 0],
                                'geometry': [Polygon([(-1, -1), (2, -3), (4, 7)]),
-                                            Polygon([(8, 10), (-5, -3), (6, 9)])]})
+                                            Polygon([(8, 10), (-5, -3), (6, 9)])]},
+                              crs='esri:102010')
         result = random_points_in_polygon(df, p=1)
         benchmark = pd.Series([0, 1], name='dem')
         pd.testing.assert_series_equal(result["dem"], benchmark)
@@ -27,7 +29,8 @@ class TestPartisanDislocation(unittest.TestCase):
     def test_random_points_in_polygon_float_coordinates(self):
         df = gpd.GeoDataFrame({'D': [0, 1], 'R': [1, 0],
                                'geometry': [Polygon([(-1.3, -1.0), (2.8, -3.1), (4.4, 7.9)]),
-                                            Polygon([(8.6, 10.5), (-5.3, -3.4), (6.2, 9.1)])]})
+                                            Polygon([(8.6, 10.5), (-5.3, -3.4), (6.2, 9.1)])]},
+                              crs='esri:102010')
         result = random_points_in_polygon(df, p=1)
         benchmark = pd.Series([0, 1], name='dem')
         pd.testing.assert_series_equal(result["dem"], benchmark)
@@ -35,7 +38,8 @@ class TestPartisanDislocation(unittest.TestCase):
     def test_random_points_in_polygon_column_names(self):
         df = gpd.GeoDataFrame({'dem': [0, 1], 'repub': [1, 0],
                                'geometry': [Polygon([(-1.3, -1.0), (2.8, -3.1), (4.4, 7.9)]),
-                                            Polygon([(8.6, 10.5), (-5.3, -3.4), (6.2, 9.1)])]})
+                                            Polygon([(8.6, 10.5), (-5.3, -3.4), (6.2, 9.1)])]},
+                              crs='esri:102010')
         result = random_points_in_polygon(df, p=1,
                                           dem_vote_count='dem',
                                           repub_vote_count='repub')

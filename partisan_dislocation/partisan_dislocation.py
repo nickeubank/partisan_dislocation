@@ -38,6 +38,11 @@ def random_points_in_polygon(precincts, p=0.01,
     :param random_seed: (default=None)
               Random state or seed passed to numpy.
     """
+    
+    # Make sure projected!
+    if precincts.crs is None: 
+        raise ValueError("Precincts must have a defined CRS")
+    
     # Make master dataframe
     gf = gpd.GeoDataFrame(columns=['dem', 'geometry'])
 
