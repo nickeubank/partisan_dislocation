@@ -12,6 +12,8 @@ The three functions provided by the package are:
 - `calculate_voter_knn`: takes a voter point GeoDataframe and returns a voter point GeoDataframe with voter knn scores.
 - `calculate_dislocation`: takes a voter point GeoDataframe with knn scores and a GeoDataframe with electoral district polygons and returns voter dislocation scores.
 
+## Tutorial
+
 Demonstration of how the package can be used can be found in [dislocation_tutorial.ipynb](https://github.com/nickeubank/partisan_dislocation/blob/master/dislocation_tutorial.ipynb).
 
 ## Installation
