@@ -4,12 +4,14 @@ from shapely.geometry import Polygon
 from shapely.geometry import Point
 import geopandas as gpd
 from partisan_dislocation import random_points_in_polygon
+from partisan_dislocation import calculate_voter_knn
+from partisan_dislocation import calculate_dislocation
 import random
 
 class TestPartisanDislocation(unittest.TestCase):
 
     def test_random_points_in_polygon_simple_test(self):
-        df = gpd.GeoDataFrame({'D': [0, 1], 'R': [1, 0],
+        df = gpd.GeoDataFrame({'dem': [0, 1], 'rep': [1, 0],
                                'geometry': [Polygon([(0, 0), (1, 1), (0, 1)]),
                                             Polygon([(0, 0), (1, 1), (0, 1)])]},
                                crs='esri:102010')
@@ -18,7 +20,7 @@ class TestPartisanDislocation(unittest.TestCase):
         pd.testing.assert_series_equal(result["dem"], benchmark)
 
     def test_random_points_in_polygon_negative_coordinates(self):
-        df = gpd.GeoDataFrame({'D': [0, 1], 'R': [1, 0],
+        df = gpd.GeoDataFrame({'dem': [0, 1], 'rep': [1, 0],
                                'geometry': [Polygon([(-1, -1), (2, -3), (4, 7)]),
                                             Polygon([(8, 10), (-5, -3), (6, 9)])]},
                               crs='esri:102010')
@@ -27,7 +29,7 @@ class TestPartisanDislocation(unittest.TestCase):
         pd.testing.assert_series_equal(result["dem"], benchmark)
 
     def test_random_points_in_polygon_float_coordinates(self):
-        df = gpd.GeoDataFrame({'D': [0, 1], 'R': [1, 0],
+        df = gpd.GeoDataFrame({'dem': [0, 1], 'rep': [1, 0],
                                'geometry': [Polygon([(-1.3, -1.0), (2.8, -3.1), (4.4, 7.9)]),
                                             Polygon([(8.6, 10.5), (-5.3, -3.4), (6.2, 9.1)])]},
                               crs='esri:102010')
@@ -36,16 +38,56 @@ class TestPartisanDislocation(unittest.TestCase):
         pd.testing.assert_series_equal(result["dem"], benchmark)
 
     def test_random_points_in_polygon_column_names(self):
-        df = gpd.GeoDataFrame({'dem': [0, 1], 'repub': [1, 0],
+        df = gpd.GeoDataFrame({'dem': [0, 1], 'rep': [1, 0],
                                'geometry': [Polygon([(-1.3, -1.0), (2.8, -3.1), (4.4, 7.9)]),
                                             Polygon([(8.6, 10.5), (-5.3, -3.4), (6.2, 9.1)])]},
                               crs='esri:102010')
         result = random_points_in_polygon(df, p=1,
                                           dem_vote_count='dem',
-                                          repub_vote_count='repub')
+                                          repub_vote_count='rep')
         benchmark = pd.Series([0, 1], name='dem')
         pd.testing.assert_series_equal(result["dem"], benchmark)
+        
+    def test_random_points_in_polygon_prob_test(self):
+        df = gpd.GeoDataFrame({'dem': [1, 1, 0, 0, 0, 0], 'rep': [0, 0, 1, 1, 1, 1],
+                                'geometry': [Polygon([(0, 1), (1, 0), (0, 0)]),
+                                             Polygon([(0, -1), (-1, 0), (0, 0)]),
+                                             Polygon([(0, 1), (-1, 0), (0, 0)]),
+                                             Polygon([(0, -1), (1, 0), (0, 0)]),
+                                             Polygon([(1, 0), (1, 1), (0, 1)]),
+                                             Polygon([(1, 0), (-1, -1), (0, -1)])]}, crs='esri:102010')
+        result = random_points_in_polygon(df, p=1)
+        benchmark = pd.Series([1, 1, 0, 0, 0, 0], name='dem')
+        pd.testing.assert_series_equal(result['dem'], benchmark)
 
+    def test_calculate_voter_knn_simple_test(self):
+        df = gpd.GeoDataFrame({'dem': [1, 1, 0, 0, 0, 0], 'rep': [0, 0, 1, 1, 1, 1], 
+                               'geometry': [Polygon([(0, 1), (1, 0), (0, 0)]), 
+                                            Polygon([(0, -1), (-1, 0), (0, 0)]),
+                                            Polygon([(0, 1), (-1, 0), (0, 0)]),
+                                            Polygon([(0, -1), (1, 0), (0, 0)]),
+                                            Polygon([(1, 0), (1, 1), (0, 1)]),
+                                            Polygon([(1, 0), (-1, -1), (0, -1)])]}, crs='esri:102010')
+        df_random_points = random_points_in_polygon(df, p=1)
+        df_voter_knn = calculate_voter_knn(df_random_points, k=3)
+        
+    def test_calculate_dislocation_simple_test(self):
+        df = gpd.GeoDataFrame({'dem': [1, 1, 0, 0, 0, 0], 'rep': [0, 0, 1, 1, 1, 1], 
+                               'geometry': [Polygon([(0, 1), (1, 0), (0, 0)]), 
+                                            Polygon([(0, -1), (-1, 0), (0, 0)]),
+                                            Polygon([(0, 1), (-1, 0), (0, 0)]),
+                                            Polygon([(0, -1), (1, 0), (0, 0)]),
+                                            Polygon([(1, 0), (1, 1), (0, 1)]),
+                                            Polygon([(1, 0), (-1, -1), (0, -1)])]}, crs='esri:102010')
+        district_test = gpd.GeoDataFrame({'district': [1, 2, 3],
+                                          'geometry': [Polygon([(-1, 0), (0, 1), (1, 0)]), 
+                                                       Polygon([(0, 1), (1, 1), (1, -1), (0, -1)]),
+                                                       Polygon([(-1, 0), (1, 0), (-1, -1)])]}, crs='esri:102010')
+        df_random_points = random_points_in_polygon(df, p=1)
+        df_voter_knn = calculate_voter_knn(df_random_points, k=3)
+        df_dislocation = calculate_dislocation(df_voter_knn, district_test)
+
+        
     # def test_random_points_in_polygon_diff_prob(self):
     #     df = gpd.GeoDataFrame({'P2008_D': [0, 1], 'P2008_R': [1, 0],
     #                            'geometry': [Polygon([(-1.3, -1.0), (2.8, -3.1), (4.4, 7.9)]),
