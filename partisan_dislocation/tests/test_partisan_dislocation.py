@@ -119,21 +119,21 @@ class TestPartisanDislocation(unittest.TestCase):
         dem_proportion = ((df_random_points['dem'].values == 1).sum())/dem_initial
         assert min(p-(f*delta), p+(f*delta)) < dem_proportion < max(p-(f*delta), p+(f*delta))
         
-    def test_probability_value(self):
-        dem_initial = 100000 # set initial number of democrats
-        p = 0.29 # set the probability
-        delta = 0.01 # a small number used to calculate interval for checking if generated dem proportion falls inside the range
-        f = 6 # factor to be multiplied with delta
-        df = gpd.GeoDataFrame({'dem': [100000], 'rep': [200000],
-                                      'geometry': [Polygon([(0, 1), (1, 0), (0, 0), (1, 1)]), 
-                                                   ]}, crs='esri:102010')
-        district_test = gpd.GeoDataFrame({'district': [1, 2, 3],
-                                      'geometry': [Polygon([(-1, 0), (0, 1), (1, 0)]), 
-                                                   Polygon([(0, 1), (1, 1), (1, -1), (0, -1)]),
-                                                   Polygon([(-1, 0), (1, 0), (-1, -1)])]}, crs='esri:102010')
-        df_random_points = random_points_in_polygon(df, p=0.29)
-        dem_proportion = ((df_random_points['dem'].values == 1).sum())/dem_initial
-        assert min(p-(f*delta), p+(f*delta)) < dem_proportion < max(p-(f*delta), p+(f*delta))
+    #     def test_probability_value(self):
+    #         dem_initial = 100000 # set initial number of democrats
+    #         p = 0.29 # set the probability
+    #         delta = 0.01 # a small number used to calculate interval for checking if generated dem proportion falls inside the range
+    #         f = 6 # factor to be multiplied with delta
+    #         df = gpd.GeoDataFrame({'dem': [100000], 'rep': [200000],
+    #                                       'geometry': [Polygon([(0, 1), (1, 0), (0, 0), (1, 1)]), 
+    #                                                    ]}, crs='esri:102010')
+    #         district_test = gpd.GeoDataFrame({'district': [1, 2, 3],
+    #                                       'geometry': [Polygon([(-1, 0), (0, 1), (1, 0)]), 
+    #                                                    Polygon([(0, 1), (1, 1), (1, -1), (0, -1)]),
+    #                                                    Polygon([(-1, 0), (1, 0), (-1, -1)])]}, crs='esri:102010')
+    #         df_random_points = random_points_in_polygon(df, p=0.29)
+    #         dem_proportion = ((df_random_points['dem'].values == 1).sum())/dem_initial
+    #         assert min(p-(f*delta), p+(f*delta)) < dem_proportion < max(p-(f*delta), p+(f*delta))
 
 
 if __name__ == '__main__':
