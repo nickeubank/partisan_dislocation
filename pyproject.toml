@@ -21,4 +21,4 @@ classifiers=[
 ]
 
 [tool.flit.sdist]
-exclude = ["2008_presidential_precinct_data", "*.ipynb"]
+exclude = ["2008_presidential_precinct_data", "*.ipynb", "partisan_dislocation_maps"]

@@ -21,3 +21,6 @@ This package can be easily installed using `pip`:
 ```
 pip install partisan_dislocation
 ```
+## Dislocation Maps
+
+This repository also includes partisan dislocation maps --- analogous to those in [Deford, Eubank, Rodden](http://www.nickeubank.com/defordeubankrodden_dislocation/) --- for all states and legislative levels. Those can be found in the `partisan_dislocation_maps` folder.
