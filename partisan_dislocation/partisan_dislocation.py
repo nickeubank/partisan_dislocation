@@ -26,8 +26,8 @@ def _make_random_points(number, polygon):
     return points
 
 def random_points_in_polygon(precincts, p=0.01,
-                             dem_vote_count="D",
-                             repub_vote_count="R",
+                             dem_vote_count="dem",
+                             repub_vote_count="rep",
                              random_seed=None):
     """
     :param precincts: :class:`geopandas.GeoDataFrame`
