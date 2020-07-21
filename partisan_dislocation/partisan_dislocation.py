@@ -15,9 +15,14 @@ def _make_random_points(number, polygon):
     i= 0
     while i < number:
         point = Point(random.uniform(min_x, max_x), random.uniform(min_y, max_y))
+        attempt = 0
         if polygon.contains(point):
             points.append(point)
             i += 1
+            attempt += 1
+            if attempt > 100000:
+                raise ValueError("Could not generate a random point in one of your precincts."\
+                                 " Check for zero-area precincts or invalid geometries.")
     return points
 
 def random_points_in_polygon(precincts, p=0.01,
@@ -37,11 +42,16 @@ def random_points_in_polygon(precincts, p=0.01,
               Name of column with Republican vote counts per precinct.
     :param random_seed: (default=None)
               Random state or seed passed to numpy.
+
     """
     
     # Make sure projected!
     if precincts.crs is None: 
         raise ValueError("Precincts must have a defined CRS")
+    
+    # Set seed if passed.
+    if random_seed is not None:
+        np.random.seed(random_seed)
     
     # Make master dataframe
     gf = gpd.GeoDataFrame(columns=['dem', 'geometry'])
@@ -51,18 +61,29 @@ def random_points_in_polygon(precincts, p=0.01,
         for party in [dem_vote_count, repub_vote_count]:
             points_to_add = np.random.binomial(int(row[party]), p)
             points = _make_random_points(points_to_add, row.geometry)
-            for point in points:
-                if party == dem_vote_count:
-                    dem_value = 1
-                else:
-                    dem_value = 0
 
-                gf = gf.append({'dem': dem_value, 'geometry': point}, ignore_index=True)
+            new_points = gpd.GeoDataFrame(columns=['dem', 'geometry'],
+                                          dtype='object',
+                                          index=range(points_to_add))
+
+            # Set dem values for points
+            if party == dem_vote_count: 
+                d_value = 1
+            else: 
+                d_value = 0
+                
+            new_points['dem'] = d_value
+            
+            for i, point in enumerate(points):            
+                new_points.iloc[i, 1] = point
+                    
+            gf = pd.concat([gf, new_points])
 
     gf['dem'] = gf['dem'].astype('int64')
     
     # Make sure using original CRS
     gf.crs = precincts.crs.to_proj4()
+    gf = gf.reset_index(drop=True)
 
     return gf
 
