@@ -12,17 +12,24 @@ def _make_random_points(number, polygon):
     "Generates number of uniformly distributed points in polygon"
     points = []
     min_x, min_y, max_x, max_y = polygon.bounds
-    i= 0
+    
+    i = 0
+    attempt = 0
+    
     while i < number:
-        point = Point(random.uniform(min_x, max_x), random.uniform(min_y, max_y))
-        attempt = 0
+        point = Point(np.random.uniform(min_x, max_x), np.random.uniform(min_y, max_y))
+        
+        # If its in polygon, keep. Otherwise we keep going. 
         if polygon.contains(point):
             points.append(point)
             i += 1
-            attempt += 1
-            if attempt > 100000:
-                raise ValueError("Could not generate a random point in one of your precincts."\
-                                 " Check for zero-area precincts or invalid geometries.")
+            attempt = 0
+
+        # Count how many times we've tried for this point
+        attempt += 1
+        if attempt > 10000:
+            raise ValueError("Could not generate a random point in one of your precincts."\
+                             " Check for zero-area precincts or invalid geometries.")
     return points
 
 def random_points_in_polygon(precincts, p=0.01,
@@ -98,17 +105,23 @@ def calculate_voter_knn(voter_points, k, target_column='dem'):
     """
 
     voter_points = voter_points.copy()
+    voter_points = voter_points.reset_index(drop=True)
     voter_points[f'knn_shr_{target_column}'] = np.nan
 
     tree = cKDTree(list(zip(voter_points['geometry'].x, voter_points['geometry'].y)))
 
-    dd, ii = tree.query(list(zip(voter_points['geometry'].x, voter_points['geometry'].y)), k=k)
+    # Note this will pull the point itself, which we don't want. 
+    # So do k+1, then remove "self" later. 
+    dd, ii = tree.query(list(zip(voter_points['geometry'].x, voter_points['geometry'].y)), k=k+1)
 
-    its = 0
     for index, row in voter_points.iterrows():
-        voter_points.at[index, f'knn_shr_{target_column}'] = sum(voter_points[target_column]
-                                                                 [ii[its]]) / k
-        its += 1
+        
+        # Extract self.
+        neighbors = [i for i in ii[index] if i != index]
+        assert len(neighbors) < len(ii[index])
+        
+        voter_points.at[index, f'knn_shr_{target_column}'] = sum(voter_points[target_column].iloc[neighbors]) / k
+
     return voter_points
 
 def calculate_dislocation(voter_points, districts, 
