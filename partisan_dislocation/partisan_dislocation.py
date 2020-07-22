@@ -122,7 +122,7 @@ def calculate_voter_knn(voter_points, k, target_column='dem'):
             raise ValueError("You should never get this error. If you do, please post an issue on the github"\
                              " repository for this package at www.github.com/nickeubank/partisan_dislocation")
         
-        voter_points.at[index, f'knn_shr_{target_column}'] = sum(voter_points[target_column].iloc[neighbors]) / k
+        voter_points.at[index, f'knn_shr_{target_column}'] = voter_points[target_column].iloc[neighbors].sum() / k
 
     return voter_points
 
@@ -161,8 +161,8 @@ def calculate_dislocation(voter_points, districts,
     dislocation[f'district_{dem_column}_share'] = dislocation.groupby([new_id])[[dem_column]].transform(np.mean)
         
     # Calculate dislocation score
-    dislocation['partisan_dislocation'] = (dislocation[knn_column] - 
-                                           dislocation[f'district_{dem_column}_share'])
+    dislocation['partisan_dislocation'] = (dislocation[f'district_{dem_column}_share'] - 
+                                           dislocation[knn_column])
 
     # clean
     dislocation = dislocation[[dem_column, knn_column, 

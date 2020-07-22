@@ -6,7 +6,6 @@ import geopandas as gpd
 from partisan_dislocation import random_points_in_polygon
 from partisan_dislocation import calculate_voter_knn
 from partisan_dislocation import calculate_dislocation
-import random
 
 class TestPartisanDislocation(unittest.TestCase):
 
@@ -93,7 +92,8 @@ class TestPartisanDislocation(unittest.TestCase):
         district_test = gpd.GeoDataFrame({'district': [1, 2, 3],
                                           'geometry': [Polygon([(-1, 0), (0, 1), (1, 0)]), 
                                                        Polygon([(0, 1), (1, 1), (1, -1), (0, -1)]),
-                                                       Polygon([(-1, 0), (1, 0), (-1, -1)])]}, crs='esri:102010')
+                                                       Polygon([(-1, 0), (1, 0), (-1, -1)])]}, 
+                                          crs='esri:102010')
         df_random_points = random_points_in_polygon(df, p=1)
         df_voter_knn = calculate_voter_knn(df_random_points, k=3)
         df_dislocation = calculate_dislocation(df_voter_knn, district_test)
@@ -109,6 +109,31 @@ class TestPartisanDislocation(unittest.TestCase):
                        crs='esri:102010')
         pd.testing.assert_series_equal(calculate_voter_knn(df, k=2)['knn_shr_dem'], 
                                        pd.Series([0.5, 1, 0, 0.5, 0.5, 0], name='knn_shr_dem'))
+
+    def test_calculation_of_dislocation(self):
+        df = gpd.GeoDataFrame({'dem': [1, 0, 1, 0, 0, 1],
+                       'geometry': [Point(-3, 0),
+                                    Point(-2, 0),
+                                    Point(-1, 0),
+                                    Point(0, 0),
+                                    Point(1, 0),
+                                    Point(2, 0)]}, 
+                       crs='esri:102010')
+        districts = gpd.GeoDataFrame({'dist': [1, 0],
+                                      'geometry': [Polygon([[-3.5, -1], [-3.5, 1], 
+                                                            [-1.5, 1], [-1.5, -1], [-3.5, -1]]),
+                                                   Polygon([[-1.5, 1], [-1.5, -1], 
+                                                            [2.5, -1], [2.5, 1], [-1.5, 1]])]
+                                      }, crs='esri:102010')
+        knns = calculate_voter_knn(df, k=2)
+        dislocation = calculate_dislocation(knns, districts)
+        
+        expected_result = pd.DataFrame({'district_dem_share': [0.5]*6,
+                                        'partisan_dislocation': [0, -0.5, 0.5, 0, 0, 0.5]})
+        
+        pd.testing.assert_frames_equal(dislocation[['district_dem_share', 'partisan_dislocation']], 
+                                       expected_result)
+
         
 class TestPartisanDislocationProbabilities(unittest.TestCase):
         
