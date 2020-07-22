@@ -118,7 +118,9 @@ def calculate_voter_knn(voter_points, k, target_column='dem'):
         
         # Extract self.
         neighbors = [i for i in ii[index] if i != index]
-        assert len(neighbors) < len(ii[index])
+        if not len(neighbors) < len(ii[index]):
+            raise ValueError("You should never get this error. If you do, please post an issue on the github"\
+                             " repository for this package at www.github.com/nickeubank/partisan_dislocation")
         
         voter_points.at[index, f'knn_shr_{target_column}'] = sum(voter_points[target_column].iloc[neighbors]) / k
 
