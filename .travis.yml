@@ -1,4 +1,1 @@
 language: python
-
-after_success:
-  - codecov
