@@ -1,5 +1,7 @@
 # Partisan Dislocation
 
+[![Build Status](https://travis-ci.org/nickeubank/partisan_dislocation.svg?branch=master)](https://travis-ci.org/nickeubank/partisan_dislocation)
+
 This package implements the partisan dislocation measure from [Deford, Eubank, Rodden](http://www.nickeubank.com/defordeubankrodden_dislocation/).
 
 It takes as input a GeoDataframe of polygons with columns containing vote counts for both political parties for each polygon. it includes three functions which, when used sequentially, will return a GeoDataframe of representative voter point along with associated dislocation scores for each point.
