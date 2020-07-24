@@ -16,8 +16,8 @@ install:
 
   - conda config --add channels conda-forge
   - conda config --set channel_priority strict
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION geopandas scipy
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION geopandas scipy coverage
   - conda activate test-environment
 
 script:
-  python -m unittest
+  coverage run -m unittest discover
