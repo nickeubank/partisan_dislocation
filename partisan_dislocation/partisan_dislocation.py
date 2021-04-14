@@ -95,9 +95,10 @@ def random_points_in_polygon(
         }
 
         # Split integer residual probabilistically:
-        residual_dem = swung_dem_share * voters - int(swung_dem_share * voters)
+        residual_dem = (votes[dem_vote_count] + votes[repub_vote_count]) - voters
         if residual_dem != 0:
-            extra_dem = np.random.binomial(1, residual_dem)
+            dem_prob = votes[dem_vote_count] - int(votes[dem_vote_count])
+            extra_dem = np.random.binomial(1, dem_prob)
             if extra_dem == 1:
                 votes[dem_vote_count] = votes[dem_vote_count] + 1
             if extra_dem == 0:
