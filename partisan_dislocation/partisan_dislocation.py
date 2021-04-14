@@ -82,10 +82,11 @@ def random_points_in_polygon(
     for index, row in precincts.iterrows():
         # Get num seats for each
         voters = int(row[dem_vote_count]) + int(row[repub_vote_count])
-        dem_share = int(row[dem_vote_count]) / (
-            int(row[repub_vote_count]) + int(row[dem_vote_count])
-        )
-        swung_dem_share = dem_share + uniform_swing_to_dems
+        if voters != 0:
+            dem_share = int(row[dem_vote_count]) / voters
+            swung_dem_share = dem_share + uniform_swing_to_dems
+        if voters == 0:
+            swung_dem_share = 0.5
 
         # Num votes from which to draw after swing
         votes = {
