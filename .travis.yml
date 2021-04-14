@@ -20,5 +20,5 @@ install:
   - conda activate test-environment
 
 script:
-  python unittest partisan_dislocation/tests/test_partisan_dislocation.py
-  coverage run -m unittest partisan_dislocation/tests/test_partisan_dislocation.py
+  - python unittest partisan_dislocation/tests/test_partisan_dislocation.py
+  - coverage run -m unittest partisan_dislocation/tests/test_partisan_dislocation.py
