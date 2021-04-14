@@ -73,7 +73,7 @@ def random_points_in_polygon(
         np.random.seed(random_seed)
 
     # Check people don't get confused by uniform swing.
-    if uniform_swing_to_dems > -1 or uniform_swing_to_dems < 1:
+    if uniform_swing_to_dems < -1 or uniform_swing_to_dems > 1:
         raise ValueError("Uniform swing should be in SHARES and lie between -1 and 1.")
 
     # Make master dataframe
