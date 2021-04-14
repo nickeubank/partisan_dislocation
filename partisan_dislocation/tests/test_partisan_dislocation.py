@@ -41,6 +41,26 @@ class TestPartisanDislocation(unittest.TestCase):
         result2 = random_points_in_polygon(df, p=0.5, random_seed=47)
         pd.testing.assert_frame_equal(result1, result2)
 
+    def test_uniformswing(self):
+        df = gpd.GeoDataFrame(
+            {
+                "dem": [10000],
+                "rep": [20000],
+                "geometry": [
+                    Polygon([(0, 1), (1, 0), (0, 0), (1, 1)]),
+                ],
+            },
+            crs="esri:102010",
+        )
+        df_random_points = random_points_in_polygon(
+            df, p=0.5, uniform_swing_to_dems=1 / 6
+        )
+
+        assert (
+            df_random_points["dem"].mean() > 0.47
+            and df_random_points["dem"].mean() < 0.53
+        )
+
     def test_random_points_in_polygon_negative_coordinates(self):
         df = gpd.GeoDataFrame(
             {
@@ -216,7 +236,7 @@ class TestPartisanDislocation(unittest.TestCase):
             }
         )
 
-        pd.testing.assert_frames_equal(
+        pd.testing.assert_frame_equal(
             dislocation[["district_dem_share", "partisan_dislocation"]], expected_result
         )
 
@@ -232,17 +252,6 @@ class TestPartisanDislocationProbabilities(unittest.TestCase):
                 "rep": [200],
                 "geometry": [
                     Polygon([(0, 1), (1, 0), (0, 0), (1, 1)]),
-                ],
-            },
-            crs="esri:102010",
-        )
-        district_test = gpd.GeoDataFrame(
-            {
-                "district": [1, 2, 3],
-                "geometry": [
-                    Polygon([(-1, 0), (0, 1), (1, 0)]),
-                    Polygon([(0, 1), (1, 1), (1, -1), (0, -1)]),
-                    Polygon([(-1, 0), (1, 0), (-1, -1)]),
                 ],
             },
             crs="esri:102010",
@@ -270,17 +279,6 @@ class TestPartisanDislocationProbabilities(unittest.TestCase):
             },
             crs="esri:102010",
         )
-        district_test = gpd.GeoDataFrame(
-            {
-                "district": [1, 2, 3],
-                "geometry": [
-                    Polygon([(-1, 0), (0, 1), (1, 0)]),
-                    Polygon([(0, 1), (1, 1), (1, -1), (0, -1)]),
-                    Polygon([(-1, 0), (1, 0), (-1, -1)]),
-                ],
-            },
-            crs="esri:102010",
-        )
         df_random_points = random_points_in_polygon(df, p=0.37)
 
         for party in ["dem", "rep"]:
@@ -300,17 +298,6 @@ class TestPartisanDislocationProbabilities(unittest.TestCase):
                 "rep": [20000],
                 "geometry": [
                     Polygon([(0, 1), (1, 0), (0, 0), (1, 1)]),
-                ],
-            },
-            crs="esri:102010",
-        )
-        district_test = gpd.GeoDataFrame(
-            {
-                "district": [1, 2, 3],
-                "geometry": [
-                    Polygon([(-1, 0), (0, 1), (1, 0)]),
-                    Polygon([(0, 1), (1, 1), (1, -1), (0, -1)]),
-                    Polygon([(-1, 0), (1, 0), (-1, -1)]),
                 ],
             },
             crs="esri:102010",

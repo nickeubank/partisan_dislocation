@@ -37,7 +37,12 @@ def _make_random_points(number, polygon):
 
 
 def random_points_in_polygon(
-    precincts, p=0.01, dem_vote_count="dem", repub_vote_count="rep", random_seed=None
+    precincts,
+    p=0.01,
+    dem_vote_count="dem",
+    repub_vote_count="rep",
+    uniform_swing_to_dems=0,
+    random_seed=None,
 ):
     """
     :param precincts: :class:`geopandas.GeoDataFrame`
@@ -50,6 +55,10 @@ def random_points_in_polygon(
               Name of column with Democratic vote counts per precinct.
     :param repub_vote_count: (default="rep")
               Name of column with Republican vote counts per precinct.
+    :param uniform_swing_to_dems: (default=0)
+              Swing in expected vote share for dems.
+              A value of 0.05 would move a 45% dem 55%
+              repub vote share to 50% / 50%.
     :param random_seed: (default=None)
               Random state or seed passed to numpy.
 
@@ -63,13 +72,30 @@ def random_points_in_polygon(
     if random_seed is not None:
         np.random.seed(random_seed)
 
+    # Check people don't get confused by uniform swing.
+    if uniform_swing_to_dems > -1 or uniform_swing_to_dems < 1:
+        raise ValueError("Uniform swing should be in SHARES and lie between -1 and 1.")
+
     # Make master dataframe
     gf = gpd.GeoDataFrame(columns=["dem", "geometry"])
 
     for index, row in precincts.iterrows():
-        # Loop over dems and republicans
+        # Get num seats for each
+        voters = int(row[dem_vote_count]) + int(row[repub_vote_count])
+        dem_share = int(row[dem_vote_count]) / (
+            int(row[repub_vote_count]) + int(row[dem_vote_count])
+        )
+        swung_dem_share = dem_share + uniform_swing_to_dems
+
+        # Num votes from which to draw after swing
+        votes = {
+            dem_vote_count: round(swung_dem_share * voters),
+            repub_vote_count: round((1 - swung_dem_share) * voters),
+        }
+
+        # Start adding seats
         for party in [dem_vote_count, repub_vote_count]:
-            points_to_add = np.random.binomial(int(row[party]), p)
+            points_to_add = np.random.binomial(votes[party], p)
             points = _make_random_points(points_to_add, row.geometry)
 
             new_points = gpd.GeoDataFrame(
