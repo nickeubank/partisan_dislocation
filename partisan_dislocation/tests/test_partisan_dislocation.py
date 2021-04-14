@@ -52,6 +52,14 @@ class TestPartisanDislocation(unittest.TestCase):
             },
             crs="esri:102010",
         )
+        # No swing
+        df_random_points = random_points_in_polygon(df, p=0.5, uniform_swing_to_dems=0)
+        assert (
+            df_random_points["dem"].mean() > 0.29
+            and df_random_points["dem"].mean() < 0.38
+        )
+
+        # With swing
         df_random_points = random_points_in_polygon(
             df, p=0.5, uniform_swing_to_dems=1 / 6
         )
