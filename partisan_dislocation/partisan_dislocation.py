@@ -4,9 +4,6 @@ from scipy.spatial import cKDTree
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import Point
-from shapely.geometry import Polygon
-import random
-import os
 
 
 def _make_random_points(number, polygon):
@@ -130,7 +127,7 @@ def random_points_in_polygon(
     gf["dem"] = gf["dem"].astype("int64")
 
     # Make sure using original CRS
-    gf.crs = precincts.crs.to_proj4()
+    gf = gf.set_crs(precincts.crs)
     gf = gf.reset_index(drop=True)
 
     return gf
@@ -176,7 +173,11 @@ def calculate_voter_knn(voter_points, k, target_column="dem"):
 
 
 def calculate_dislocation(
-    voter_points, districts, knn_column="knn_shr_dem", dem_column="dem"
+    voter_points,
+    districts,
+    knn_column="knn_shr_dem",
+    dem_column="dem",
+    district_id_col=None,
 ):
     """
     Calculation difference between knn dem share
@@ -189,19 +190,30 @@ def calculate_dislocation(
     :param knn_column: (default="knn_shr_dem")
           Column of `voter_points` with kNN scores
     :param dem_column: (default="dem")
-            Column with voter attribute to be averaged (usually "dem").
+          Column with voter attribute to be averaged (usually "dem").
+    :param district_id_col: (default=None)
+          Column with district identifier to include in voter data.
+          Optional.
     """
 
     # Put both geodataframes in common projection
-    districts = districts.to_crs(voter_points.crs.to_proj4())
+    districts = districts.to_crs(voter_points.crs)
 
-    # Add district ID column
+    # Add new district index column
     new_id = "partisan_dislocation_district_id"
     if new_id in districts.columns:
         raise ValueError(
             f"District GeoDataFrame may not have column " f"named {new_id}"
         )
-    districts = districts[["geometry"]].reset_index(drop=True)
+
+    to_keep = ["geometry"]
+
+    # Add in district name if wanted
+    if district_id_col is not None:
+        to_keep.append(district_id_col)
+
+    districts = districts[to_keep].reset_index(drop=True)
+
     districts[new_id] = districts.index
     assert districts[new_id].is_unique
 
