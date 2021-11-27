@@ -28,3 +28,10 @@ pip install partisan_dislocation
 ## Dislocation Maps
 
 This repository also includes partisan dislocation maps --- analogous to those in [Deford, Eubank, Rodden](http://www.nickeubank.com/defordeubankrodden_dislocation/) --- for all states and legislative levels. Those can be found in the `partisan_dislocation_maps` folder.
+
+## Development Notes
+
+- To run test suite, set working directory to top level and run `python -m unittest partisan_dislocation/tests/test_partisan_dislocation.py` (after ensuring pip-installed version of package not in current environment).
+- To build package: install flit, and from root directory run `flit build`. 
+- To install locally, build then run `flit install`. 
+- To create new release, build then run `flit publish`. 

@@ -231,15 +231,19 @@ def calculate_dislocation(
     )
 
     # clean
-    dislocation = dislocation[
-        [
-            dem_column,
-            knn_column,
-            f"district_{dem_column}_share",
-            "partisan_dislocation",
-            "geometry",
-        ]
+    clean_cols = [
+        dem_column,
+        knn_column,
+        f"district_{dem_column}_share",
+        "partisan_dislocation",
+        "geometry",
     ]
+
+    # Add in district name if wanted
+    if district_id_col is not None:
+        clean_cols.append(district_id_col)
+
+    dislocation = dislocation[clean_cols]
 
     # final dataframe with dislocation score calculated for each voter
     return dislocation

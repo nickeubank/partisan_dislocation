@@ -248,6 +248,50 @@ class TestPartisanDislocation(unittest.TestCase):
             dislocation[["district_dem_share", "partisan_dislocation"]], expected_result
         )
 
+    def test_adding_district_name(self):
+        df = gpd.GeoDataFrame(
+            {
+                "dem": [1, 0, 1, 0, 0, 1],
+                "geometry": [
+                    Point(-3, 0),
+                    Point(-2, 0),
+                    Point(-1, 0),
+                    Point(0, 0),
+                    Point(1, 0),
+                    Point(2, 0),
+                ],
+            },
+            crs="esri:102010",
+        )
+        districts = gpd.GeoDataFrame(
+            {
+                "dist": [1, 0],
+                "geometry": [
+                    Polygon([[-3.5, -1], [-3.5, 1], [-1.5, 1], [-1.5, -1], [-3.5, -1]]),
+                    Polygon([[-1.5, 1], [-1.5, -1], [2.5, -1], [2.5, 1], [-1.5, 1]]),
+                ],
+                "dist_name": ["a", "b"],
+            },
+            crs="esri:102010",
+        )
+        knns = calculate_voter_knn(df, k=2)
+        dislocation = calculate_dislocation(
+            knns, districts, district_id_col="dist_name"
+        )
+
+        expected_result = pd.DataFrame(
+            {
+                "district_dem_share": [0.5] * 6,
+                "partisan_dislocation": [0, -0.5, 0.5, 0, 0, 0.5],
+                "dist_name": ["a", "a", "b", "b", "b", "b"],
+            }
+        )
+
+        pd.testing.assert_frame_equal(
+            dislocation[["district_dem_share", "partisan_dislocation", "dist_name"]],
+            expected_result,
+        )
+
 
 class TestPartisanDislocationProbabilities(unittest.TestCase):
     def test_probability_value_small(self):
